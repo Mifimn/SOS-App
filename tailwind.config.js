@@ -1,6 +1,6 @@
 
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -16,9 +16,7 @@ export default {
           DEFAULT: '#22c55e',
           dark: '#16a34a',
         },
-        slate: {
-          text: '#1e293b',
-        }
+        'slate-text': '#1e293b',
       },
     },
   },
