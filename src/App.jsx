@@ -12,7 +12,8 @@ import {
   Clock,
   MessageCircle,
   Facebook,
-  Instagram
+  Instagram,
+  Fish
 } from 'lucide-react';
 import './App.css';
 
@@ -132,7 +133,7 @@ export default function App() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl sm:text-2xl text-gray-100 mb-8"
           >
-            We process over 10 tons daily. Bring your own formula for custom grinding or buy our high-quality TJ Brand feed.
+            The Hub for Aquaculture in Ilorin. We offer professional feed milling, raw materials, and fresh catfish sales directly from our ponds.
           </motion.p>
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -170,7 +171,7 @@ export default function App() {
                 Your Partner in Aquaculture Success
               </h2>
               <p className="text-lg text-slate-text mb-6 leading-relaxed">
-                Located in Ilorin, TJ Feed and Fisheries is the trusted hub for fish farmers. We combine industrial capacity with precision. Whether you need raw materials, custom crushing based on your specific formula, or ready-made floating feed, our warehouse is equipped to handle your volume.
+                Located in Ilorin, TJ Feed and Fisheries is your full-cycle aquaculture hub—from producing the feed to rearing the fish. We combine industrial capacity with precision. Whether you need raw materials, custom crushing based on your specific formula, ready-made floating feed, or fresh catfish from our ponds, we're equipped to handle your needs.
               </p>
               <div className="inline-block bg-leaf text-white px-6 py-3 rounded-lg font-bold text-xl">
                 10+ Tons Daily Capacity
@@ -205,7 +206,7 @@ export default function App() {
             <p className="text-xl text-slate-text">Comprehensive solutions for your fish farming needs</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-8">
             {/* Service Card 1 */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -256,6 +257,23 @@ export default function App() {
                 Don't have a formula? Buy our scientifically formulated TJ Brand Fish Feed. Available in Starter (2mm), Grower (4mm), and Finisher sizes.
               </p>
             </motion.div>
+
+            {/* Service Card 4 */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition"
+            >
+              <div className="w-16 h-16 bg-ocean rounded-full flex items-center justify-center mb-6">
+                <Fish size={32} className="text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-ocean mb-4">Fresh Catfish Sales</h3>
+              <p className="text-slate-text leading-relaxed">
+                We rear healthy, fast-growing catfish. Available for purchase: Fingerlings for stocking, Juveniles, Table Size (dried or fresh), and Broodstock.
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -279,6 +297,8 @@ export default function App() {
               { title: 'The Mixer', img: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600' },
               { title: 'The Pelletizer', img: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600' },
               { title: 'Finished Feed Bags', img: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600' },
+              { title: 'Concrete Fish Ponds', img: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=600' },
+              { title: 'Harvesting Fresh Catfish', img: 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=600' },
               { title: 'Loading Bay', img: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600' },
               { title: 'Warehouse Interior', img: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=600' },
             ].map((item, index) => (
