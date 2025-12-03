@@ -1,340 +1,384 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Phone, Menu, X, CheckCircle, Shield, Bug, SprayCan, 
-  Mouse, Home, MapPin, Mail, ChevronDown, Star, 
-  ArrowRight, Play, MessageCircle, Info, Quote 
+  motion, 
+  useScroll, 
+  useSpring, 
+  useMotionValue, 
+  useMotionTemplate,
+  useTransform
+} from 'framer-motion';
+import { 
+  Github, 
+  Instagram, 
+  ArrowUpRight, 
+  Download, 
+  Mail, 
+  Database, 
+  Layers, 
+  Zap,
+  Code2,
+  Terminal,
+  Cpu,
+  Palette,
+  Globe,
+  Smartphone,
+  Server,
+  Box,
+  Monitor,
+  PenTool,
+  Award,
+  Briefcase,
+  Triangle as TriangleIcon 
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 
-// --- Assets & Data ---
+// --- Utility ---
+function cn(...classes) {
+  return classes.filter(Boolean).join(' ');
+}
 
-// REBRANDED: Professional FOF Logo
-const LOGO = (
-  <svg width="160" height="45" viewBox="0 0 160 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Abstract Shield/Fume Icon */}
-    <path d="M25 5L10 15V25C10 35 18 42 25 45C32 42 40 35 40 25V15L25 5Z" fill="#DC2626" fillOpacity="0.1" stroke="#DC2626" strokeWidth="2"/>
-    <path d="M25 15V35M18 25H32" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"/>
-    
-    {/* Text */}
-    <text x="50" y="28" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="26" fill="#111827" letterSpacing="-1">FOF</text>
-    <text x="50" y="40" fontFamily="Arial, sans-serif" fontWeight="600" fontSize="9" fill="#DC2626" letterSpacing="1" style={{textTransform: 'uppercase'}}>Fumigation Service</text>
-  </svg>
+// --- Components ---
+
+// 1. Background Grid Pattern
+const GridBackground = () => (
+  <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" 
+       style={{
+         backgroundImage: `linear-gradient(to right, #808080 1px, transparent 1px),
+                           linear-gradient(to bottom, #808080 1px, transparent 1px)`,
+         backgroundSize: '40px 40px'
+       }} 
+  />
 );
 
-const SERVICES = [
-  {
-    id: 1,
-    title: "Termite Defense",
-    desc: "Subterranean termite elimination using non-invasive baiting systems.",
-    image: "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=600",
-    icon: <Bug className="w-6 h-6" />
-  },
-  {
-    id: 2,
-    title: "Rodent Control",
-    desc: "Complete exclusion services to seal entry points and remove nests.",
-    image: "https://images.unsplash.com/photo-1628595351029-c2bf17511435?auto=format&fit=crop&q=80&w=600",
-    icon: <Mouse className="w-6 h-6" />
-  },
-  {
-    id: 3,
-    title: "Viral Disinfection",
-    desc: "Hospital-grade misting to neutralize 99.9% of bacteria and viruses.",
-    image: "https://images.unsplash.com/photo-1585421514738-01798e348b17?auto=format&fit=crop&q=80&w=600",
-    icon: <SprayCan className="w-6 h-6" />
-  },
-  {
-    id: 4,
-    title: "Bed Bug Heat",
-    desc: "Chemical-free thermal remediation. One treatment, zero bugs.",
-    image: "https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&q=80&w=600",
-    icon: <Home className="w-6 h-6" />
-  }
-];
+// 2. Magnetic Button (Updated to handle Download props correctly)
+const MagneticButton = ({ children, className, onClick, href, download, target }) => {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
-const PEST_LIBRARY = [
-  { name: "Termites", risk: "Structural Damage", img: "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=400" },
-  { name: "Cockroaches", risk: "Disease Vector", img: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&q=80&w=400" },
-  { name: "Rodents", risk: "Fire Hazard", img: "https://images.unsplash.com/photo-1628595351029-c2bf17511435?auto=format&fit=crop&q=80&w=400" },
-  { name: "Mosquitoes", risk: "Malaria Risk", img: "https://images.unsplash.com/photo-1595434091143-b375ced5fe5c?auto=format&fit=crop&q=80&w=400" },
-  { name: "Ants", risk: "Food Contamination", img: "https://images.unsplash.com/photo-1530023367847-a683933f4172?auto=format&fit=crop&q=80&w=400" },
-];
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    x.set((clientX - centerX) * 0.3); 
+    y.set((clientY - centerY) * 0.3);
+  };
 
-const REVIEWS = [
-  { 
-    name: "Mr. Adebayo", 
-    role: "Hotel Manager", 
-    text: "FOF saved our business license. The cockroach infestation was gone in 48 hours.",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
-  },
-  { 
-    name: "Mrs. Okonjo", 
-    role: "Homeowner", 
-    text: "Professional, discreet, and very effective. I haven't seen a single rat since FOF visited.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" 
-  },
-  { 
-    name: "Engr. David", 
-    role: "Real Estate Dev", 
-    text: "We use FOF for all our pre-construction termite treatments. Zero complaints.",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200" 
-  },
-];
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
 
-const AnimatedCounter = ({ value, label }) => (
-  <div className="text-center group">
-    <motion.div
-      initial={{ opacity: 0, scale: 0.5 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      className="text-4xl md:text-5xl font-extrabold text-red-600 mb-2 group-hover:scale-110 transition-transform"
+  const Component = href ? motion.a : motion.button;
+
+  return (
+    <Component
+      ref={ref}
+      href={href}
+      download={download}
+      target={target}
+      onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x, y }}
+      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+      className={cn("relative z-10 inline-flex cursor-pointer items-center justify-center", className)}
     >
-      {value}
-    </motion.div>
-    <div className="text-gray-500 text-sm uppercase tracking-widest font-semibold">{label}</div>
-  </div>
-);
+      {children}
+    </Component>
+  );
+};
 
-const FloatingWhatsApp = () => (
-  <motion.a
-    href="https://wa.me/2348012345678"
-    target="_blank"
-    initial={{ scale: 0 }}
-    animate={{ scale: 1 }}
-    whileHover={{ scale: 1.1 }}
-    className="fixed bottom-8 right-8 z-50 bg-red-600 text-white p-4 rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors border-4 border-white"
-  >
-    <MessageCircle size={28} />
-  </motion.a>
-);
-
-export default function App() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
+// 3. Kinetic Typography (Marquee)
+const Marquee = ({ text, direction = 1, speed = 5 }) => {
+  const x = useMotionValue(0);
+  const animationRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const animate = () => {
+      x.set(x.get() + direction * (speed * 0.05));
+      if (direction === 1 && x.get() > 0) x.set(-100);
+      if (direction === -1 && x.get() < -100) x.set(0);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [direction, speed, x]);
+
+  return (
+    <div className="flex overflow-hidden whitespace-nowrap opacity-10 select-none pointer-events-none mix-blend-difference">
+      <motion.div style={{ x: useMotionTemplate`${x}%` }} className="flex">
+        {[...Array(4)].map((_, i) => (
+          <span key={i} className="text-[12vw] font-black leading-none mx-8 uppercase font-mono">
+            {text}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+};
+
+// 4. Skill Card
+const SkillCard = ({ name, icon: Icon, level }) => (
+  <motion.div 
+    whileHover={{ y: -5, backgroundColor: "#111" }}
+    className="flex flex-col items-center justify-center p-6 border border-neutral-800 bg-black aspect-square group transition-colors"
+  >
+    <Icon size={32} className="text-neutral-500 mb-4 group-hover:text-white transition-colors" />
+    <span className="font-bold text-sm uppercase tracking-wider">{name}</span>
+    <div className="w-full h-1 bg-neutral-900 mt-4 rounded-full overflow-hidden">
+      <div className="h-full bg-white" style={{ width: level }}></div>
+    </div>
+  </motion.div>
+);
+
+// 5. Rotating Graphic Element
+const RotatingShape = () => (
+  <motion.div 
+    animate={{ rotate: 360 }}
+    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+    className="absolute right-0 top-0 opacity-10 pointer-events-none hidden lg:block"
+  >
+    <svg width="400" height="400" viewBox="0 0 400 400">
+      <circle cx="200" cy="200" r="190" stroke="white" strokeWidth="1" fill="none" strokeDasharray="10 10" />
+      <rect x="100" y="100" width="200" height="200" stroke="white" strokeWidth="1" fill="none" transform="rotate(45 200 200)" />
+    </svg>
+  </motion.div>
+);
+
+// 6. Custom Cursor
+const CustomCursor = () => {
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
+
+  useEffect(() => {
+    const moveCursor = (e) => {
+      mouseX.set(e.clientX - 16);
+      mouseY.set(e.clientY - 16);
+    };
+    window.addEventListener('mousemove', moveCursor);
+    return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
   return (
-    <div className="font-sans text-gray-900 bg-white overflow-x-hidden selection:bg-red-600 selection:text-white">
-      <FloatingWhatsApp />
+    <motion.div
+      className="fixed top-0 left-0 w-8 h-8 rounded-full border border-white pointer-events-none z-50 mix-blend-difference hidden md:block backdrop-invert"
+      style={{ x: mouseX, y: mouseY }}
+    >
+      <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
+    </motion.div>
+  );
+};
 
-      {/* Navigation */}
-      <motion.nav 
-        className={`fixed w-full z-40 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-3' : 'bg-transparent py-6'}`}
-      >
-        <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="cursor-pointer">{LOGO}</div>
-          <div className="hidden md:flex items-center gap-8">
-            {['Home', 'Services', 'Process', 'Reviews'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className={`text-sm font-bold uppercase tracking-wide hover:text-red-600 transition-colors ${isScrolled ? 'text-gray-800' : 'text-white'}`}>{item}</a>
-            ))}
-            <button className="bg-red-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-red-600/30 hover:bg-red-700 hover:scale-105 transition-all">Get Quote</button>
-          </div>
-          <button className="md:hidden z-50 text-red-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
+// 7. Epic Geometric Triangle
+const EpicTriangle = ({ size = 40, className, ...props }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 100 100" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    {...props}
+  >
+    <path d="M85 20L95 40L75 35L85 20Z" fill="currentColor" fillOpacity="0.4" />
+    <path d="M15 30L5 50L25 45L15 30Z" fill="currentColor" fillOpacity="0.4" />
+    <path d="M50 85L60 95L40 95L50 85Z" fill="currentColor" fillOpacity="0.4" />
+    <path d="M50 10L90 80H10L50 10Z" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" />
+    <path d="M50 25L75 70H25L50 25Z" fill="currentColor" fillOpacity="0.2" />
+    <path d="M10 60L90 40" stroke="currentColor" strokeWidth="2" strokeOpacity="0.5" />
+  </svg>
+);
+
+// 8. 3D Logo Component
+const ThreeDLogo = () => (
+  <motion.div
+    style={{ transformStyle: "preserve-3d" }}
+    animate={{ rotateY: 360 }}
+    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+    className="relative flex items-center justify-center"
+  >
+    <EpicTriangle size={32} className="text-white" />
+  </motion.div>
+);
+
+// --- Constants ---
+const WHATSAPP_LINK = "https://wa.me/2348023169274?text=Hello%20Mifimn,%20I%20have%20a%20project%20idea%20I'd%20like%20to%20discuss.";
+const EMAIL_ADDRESS = "mailto:shittumifimn0807@gmail.com";
+
+const App = () => {
+  const [repos, setRepos] = useState([]);
+
+  useEffect(() => {
+    fetch('https://api.github.com/users/Mifimn/repos?sort=updated&per_page=12')
+      .then(res => res.json())
+      .then(data => setRepos(Array.isArray(data) ? data : []))
+      .catch(err => console.error(err));
+  }, []);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, 45]);
+
+  return (
+    <div className="bg-black min-h-screen text-white font-sans selection:bg-white selection:text-black cursor-none md:cursor-auto overflow-x-hidden">
+      <CustomCursor />
+      <GridBackground />
+
+      {/* Progress Bar */}
+      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-white origin-left z-50" style={{ scaleX }} />
+
+      {/* Header */}
+      <header className="fixed top-0 w-full z-40 px-6 py-6 flex justify-between items-center mix-blend-difference backdrop-blur-sm">
+        <div className="flex items-center gap-4">
+          <ThreeDLogo />
+          <div className="text-xl font-black tracking-tighter">MIFIMN</div>
         </div>
-      </motion.nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
+        {/* DOWNLOAD BUTTON FIX */}
+        <MagneticButton 
+          href="/Mifimn_CV.pdf" 
+          download="Mifimn_CV.pdf"
+          target="_blank"
+          className="border border-white bg-black px-6 py-2 text-xs font-bold hover:bg-white hover:text-black transition-colors flex items-center gap-2"
+        >
+          <Download size={14} /> CV_V1.0
+        </MagneticButton>
+      </header>
+
+      {/* HERO SECTION */}
+      <section className="relative h-screen flex flex-col justify-center items-center overflow-hidden border-b border-neutral-900">
+        <RotatingShape />
+
+        <div className="absolute inset-0 flex flex-col justify-center gap-20">
+          <Marquee text="DESIGN CODE BUILD" direction={1} speed={2} />
+          <Marquee text="MIFIMN CREATIVE" direction={-1} speed={2} />
+        </div>
+
+        <div className="z-10 text-center px-4 relative">
           <motion.div
-            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-            className="fixed inset-0 bg-white z-30 flex flex-col items-center justify-center gap-8 md:hidden"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="mb-6 inline-flex items-center gap-2 border border-neutral-800 bg-black/50 backdrop-blur px-4 py-1 rounded-full text-xs text-neutral-400"
           >
-            {['Home', 'Services', 'Process', 'Contact'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)} className="text-2xl font-bold text-gray-900">{item}</a>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Hero Section */}
-      <section id="home" className="relative h-screen flex items-center overflow-hidden bg-black">
-        <motion.div style={{ scale: heroScale }} className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=1920" 
-            alt="Pest Control" 
-            className="w-full h-full object-cover opacity-60 grayscale" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-red-950/50" />
-        </motion.div>
-
-        <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center mt-16">
-          <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} className="text-white space-y-6">
-            <div className="inline-flex items-center gap-2 bg-red-600/20 border border-red-500/30 rounded-full px-4 py-1.5 backdrop-blur-sm">
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-              <span className="text-sm font-medium text-red-100">FOF Emergency Response Team</span>
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-black leading-tight tracking-tight">
-              Total <span className="text-red-600">Pest</span> <br /> Elimination.
-            </h1>
-            <p className="text-lg text-gray-300 max-w-xl">
-              Professional, discreet, and effective fumigation solutions for homes and businesses in Nigeria. FOF ensures a pest-free environment.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button className="bg-red-600 text-white px-8 py-4 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors">
-                Start Treatment <ArrowRight size={20} />
-              </button>
-              <button className="border-2 border-gray-600 text-white px-8 py-4 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-colors">
-                <Play size={20} fill="currentColor" /> Our Process
-              </button>
-            </div>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            OPEN FOR WORK
           </motion.div>
 
-          {/* Quote Form */}
+          <motion.h1 
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="text-7xl md:text-9xl font-black tracking-tighter leading-none mix-blend-difference"
+          >
+            MUSA<br />AYOOLA
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="mt-6 text-neutral-400 max-w-md mx-auto font-mono text-sm"
+          >
+            // FULLSTACK DEVELOPER & UI ARCHITECT<br/>
+            Transforming concepts into complex digital realities.
+          </motion.p>
+
           <motion.div 
-            initial={{ opacity: 0, y: 50 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="hidden lg:block bg-gray-900/80 backdrop-blur-xl border border-red-500/20 p-8 rounded-2xl shadow-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-12 flex justify-center gap-6"
           >
-            <h3 className="text-2xl font-bold text-white mb-2">Get a Fast Quote</h3>
-            <p className="text-gray-400 text-sm mb-6">Stop the infestation before it spreads.</p>
-            <form className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <input type="text" placeholder="Name" className="bg-black/50 border border-gray-700 rounded-lg p-3 text-white focus:border-red-600 outline-none transition-colors" />
-                <input type="tel" placeholder="Phone" className="bg-black/50 border border-gray-700 rounded-lg p-3 text-white focus:border-red-600 outline-none transition-colors" />
-              </div>
-              <select className="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-white focus:border-red-600 outline-none">
-                <option>Select Pest Issue...</option>
-                <option>Termites</option>
-                <option>Rodents</option>
-                <option>General Fumigation</option>
-              </select>
-              <button className="w-full bg-white text-black font-bold py-4 rounded-lg hover:bg-red-600 hover:text-white transition-colors shadow-lg">
-                Request Callback
-              </button>
-            </form>
+             <MagneticButton href="https://github.com/Mifimn/" className="p-4 bg-white text-black hover:scale-110 transition-transform">
+               <Github size={24} />
+             </MagneticButton>
+             <MagneticButton href="https://instagram.com/mifimn_01" className="p-4 border border-white hover:bg-white hover:text-black transition-colors">
+               <Instagram size={24} />
+             </MagneticButton>
           </motion.div>
         </div>
-      </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-24 bg-white relative">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-red-600 font-bold uppercase tracking-wider text-sm">Services</span>
-            <h2 className="text-4xl font-black text-gray-900 mt-2">Targeted Solutions</h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto mt-6 rounded-full"></div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SERVICES.map((service, idx) => (
-              <motion.div
-                key={service.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="group relative h-96 rounded-2xl overflow-hidden cursor-pointer bg-gray-900"
-              >
-                <img src={service.image} alt={service.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-50" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                <div className="absolute bottom-0 left-0 w-full p-6 text-white transform transition-transform duration-300 translate-y-4 group-hover:translate-y-0">
-                  <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
-                    {service.icon}
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">{service.title}</h3>
-                  <p className="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 mb-4">{service.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        <div className="absolute bottom-10 left-10 hidden md:block">
+          <Cpu className="text-neutral-800 w-24 h-24" strokeWidth={1} />
+        </div>
+        <div className="absolute top-32 right-10 hidden md:block">
+           <div className="grid grid-cols-3 gap-1">
+             {[...Array(9)].map((_, i) => <div key={i} className="w-1 h-1 bg-neutral-700" />)}
+           </div>
         </div>
       </section>
 
-      {/* Why Choose Us with Image */}
-      <section id="process" className="py-24 bg-gray-50">
-        <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white"
-              >
-                <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800" alt="Worker" className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700" />
-              </motion.div>
-              <div className="absolute -bottom-6 -right-6 z-20 bg-red-600 text-white p-8 rounded-xl shadow-xl hidden md:block">
-                <Shield size={32} className="mb-2" />
-                <p className="font-bold text-2xl">100%</p>
-                <p className="text-sm font-medium">Safe & Certified</p>
-              </div>
-            </div>
-            <div className="space-y-8">
-              <h2 className="text-4xl font-bold text-gray-900">Modern Science. <span className="text-red-600">Total Safety.</span></h2>
-              <p className="text-lg text-gray-600">FOF uses integrated pest management (IPM) techniques to eliminate pests safely, protecting your family, pets, and the environment.</p>
-              <div className="grid gap-6">
-                {[
-                  { title: "Rapid Response", desc: "Same-day service for emergencies." },
-                  { title: "Licensed Experts", desc: "Background-checked and certified team." },
-                  { title: "Satisfaction Guarantee", desc: "If pests return, so do we. For free." }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="bg-red-100 p-2 rounded-lg text-red-600"><CheckCircle size={20} /></div>
-                    <div>
-                      <h4 className="font-bold text-gray-900">{item.title}</h4>
-                      <p className="text-sm text-gray-500">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pest Library */}
-      <section className="py-24 bg-gray-950 text-white overflow-hidden">
-        <div className="container mx-auto px-6 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-2">Identify Your <span className="text-red-600">Threat</span></h2>
-        </div>
-        <div className="flex gap-6 overflow-x-auto pb-12 px-6 no-scrollbar snap-x">
-          {PEST_LIBRARY.map((pest, i) => (
-            <div key={i} className="flex-shrink-0 w-72 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 group hover:border-red-600 transition-colors">
-              <div className="h-48 overflow-hidden relative">
-                <img src={pest.img} alt={pest.name} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
-              </div>
-              <div className="p-6">
-                <h4 className="text-xl font-bold mb-1">{pest.name}</h4>
-                <div className="flex items-center gap-2 text-red-500 text-sm font-medium"><Info size={14} /> Risk: {pest.risk}</div>
+      {/* STATS STRIP */}
+      <section className="border-b border-neutral-900 bg-neutral-950">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-neutral-900">
+          {[
+            { label: "Experience", value: "4+ Years", icon: Briefcase },
+            { label: "Projects", value: "20+ Done", icon: Code2 },
+            { label: "Tech Stack", value: "Fullstack", icon: Layers },
+            { label: "Location", value: "Nigeria", icon: Globe },
+          ].map((stat, i) => (
+            <div key={i} className="p-8 flex items-center gap-4 hover:bg-neutral-900 transition-colors">
+              <stat.icon className="text-neutral-600" size={24} />
+              <div>
+                <div className="text-xl font-bold">{stat.value}</div>
+                <div className="text-xs text-neutral-500 uppercase tracking-widest">{stat.label}</div>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Testimonials with Images */}
-      <section id="reviews" className="py-24 bg-white relative">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-             <Star className="w-10 h-10 text-red-500 mx-auto mb-4 fill-current" />
-             <h2 className="text-4xl font-bold text-gray-900">Client Stories</h2>
+      {/* THE ARSENAL */}
+      <section className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-4 mb-16">
+           <PenTool size={32} />
+           <h2 className="text-4xl md:text-5xl font-black tracking-tighter">THE ARSENAL</h2>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0 border-t border-l border-neutral-800">
+          <SkillCard name="React" icon={Code2} level="95%" />
+          <SkillCard name="Next.js" icon={Monitor} level="90%" />
+          <SkillCard name="Tailwind" icon={Palette} level="98%" />
+          <SkillCard name="Supabase" icon={Database} level="85%" />
+          <SkillCard name="Node.js" icon={Server} level="80%" />
+          <SkillCard name="TypeScript" icon={Terminal} level="85%" />
+          <SkillCard name="Framer" icon={Zap} level="90%" />
+          <SkillCard name="Backend" icon={Cpu} level="75%" />
+          <SkillCard name="Mobile" icon={Smartphone} level="70%" />
+          <SkillCard name="UI/UX" icon={Box} level="85%" />
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section className="py-24 bg-neutral-950 border-y border-neutral-900">
+        <div className="px-6 max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter">
+              <span className="text-neutral-700 block text-2xl mb-2">Capabilities</span>
+              WHAT I DO
+            </h2>
+            <div className="w-full md:w-1/3 text-neutral-400 text-sm font-mono border-l border-neutral-700 pl-4">
+              Providing end-to-end digital solutions. From pixel-perfect frontend to robust, scalable backend architecture.
+            </div>
           </div>
+
           <div className="grid md:grid-cols-3 gap-8">
-            {REVIEWS.map((review, i) => (
+            {[
+              { title: "Frontend", desc: "React, Vue, Animations", icon: Monitor },
+              { title: "Backend", desc: "Database, API, Auth", icon: Server },
+              { title: "Design", desc: "UI Systems, Prototyping", icon: Palette },
+            ].map((service, i) => (
               <motion.div 
                 key={i}
-                whileHover={{ y: -5 }}
-                className="bg-gray-50 p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all"
+                whileHover={{ y: -10 }}
+                className="bg-black border border-neutral-800 p-8 relative overflow-hidden group"
               >
-                <Quote className="text-red-200 mb-4" size={40} />
-                <p className="text-gray-600 mb-6 italic leading-relaxed">"{review.text}"</p>
-                <div className="flex items-center gap-4">
-                  <img src={review.avatar} alt={review.name} className="w-12 h-12 rounded-full object-cover border-2 border-red-200" />
-                  <div>
-                    <h4 className="font-bold text-gray-900">{review.name}</h4>
-                    <p className="text-red-500 text-sm font-medium">{review.role}</p>
-                  </div>
+                <service.icon size={48} className="text-neutral-800 mb-6 group-hover:text-white transition-colors" />
+                <h3 className="text-2xl font-bold mb-4">{service.title}</h3>
+                <p className="text-neutral-500">{service.desc}</p>
+                <div className="absolute -right-10 -bottom-10 text-9xl font-black text-neutral-900/50 opacity-0 group-hover:opacity-100 transition-opacity select-none">
+                  0{i+1}
                 </div>
               </motion.div>
             ))}
@@ -342,38 +386,117 @@ export default function App() {
         </div>
       </section>
 
-      {/* Contact Section with Background Image */}
-      <section id="contact" className="relative py-24 bg-black flex items-center">
-        <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&q=80&w=1920" alt="Office" className="w-full h-full object-cover opacity-30 grayscale" />
-          <div className="absolute inset-0 bg-gradient-to-l from-black via-black/90 to-transparent" />
+      {/* FEATURED PROJECTS */}
+      <section className="py-24 px-6 max-w-7xl mx-auto relative">
+        <motion.div style={{ rotate }} className="absolute -left-20 top-20 text-[20rem] opacity-[0.02] font-black pointer-events-none select-none">
+          WORK
+        </motion.div>
+
+        <div className="flex justify-between items-end mb-16 relative z-10">
+          <h2 className="text-5xl md:text-7xl font-black tracking-tighter">SELECTED<br/>PROJECTS</h2>
+          <MagneticButton href="https://github.com/Mifimn" className="hidden md:flex items-center gap-2 border-b border-white pb-1">
+             ALL REPOSITORIES <ArrowUpRight size={16} />
+          </MagneticButton>
         </div>
 
-        <div className="container mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-end">
-          <div className="md:w-1/2 bg-white/10 backdrop-blur-md p-10 rounded-2xl border border-white/10 shadow-2xl">
-            <h2 className="text-3xl font-bold text-white mb-6">Start Your Pest-Free Life</h2>
-            <div className="space-y-6 text-gray-300 mb-8">
-              <div className="flex items-center gap-4"><Phone className="text-red-500" /> <span>+234 80 1234 5678</span></div>
-              <div className="flex items-center gap-4"><Mail className="text-red-500" /> <span>hello@fofservice.com</span></div>
-              <div className="flex items-center gap-4"><MapPin className="text-red-500" /> <span>123 Ikeja Way, Lagos</span></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {repos.length > 0 ? repos.map((repo, i) => {
+            const variant = i % 3; 
+            const rotation = (i + 1) * 15;
+
+            return (
+              <motion.a
+                key={repo.id}
+                href={repo.html_url}
+                target="_blank"
+                rel="noreferrer"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="group relative block bg-neutral-900 aspect-[4/3] overflow-hidden border border-neutral-800"
+              >
+                <div className="absolute inset-0 bg-neutral-950 flex items-center justify-center group-hover:scale-105 transition-transform duration-700 overflow-hidden">
+                  <div 
+                    className="opacity-20 w-full h-full p-8 scale-150 flex flex-wrap content-center justify-center gap-2"
+                    style={{ transform: `rotate(${rotation}deg) scale(1.5)` }}
+                  >
+                    {variant === 0 && (
+                      [...Array(64)].map((_, j) => (
+                        <div key={j} className={`rounded-full ${j % 2 === 0 ? 'bg-white' : 'bg-neutral-800'} w-2 h-2`} />
+                      ))
+                    )}
+                    {variant === 1 && (
+                      [...Array(32)].map((_, j) => (
+                        <div key={j} className={`h-1 w-8 ${j % 3 === 0 ? 'bg-white' : 'bg-neutral-800'}`} />
+                      ))
+                    )}
+                    {variant === 2 && (
+                       [...Array(16)].map((_, j) => (
+                        <div key={j} className={`w-8 h-8 ${j % 2 === 0 ? 'border border-white' : 'bg-neutral-800'}`} />
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent p-8 flex flex-col justify-end">
+                  <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform">
+                    <div className="flex items-center gap-2 text-xs font-mono text-neutral-400 mb-2">
+                      <Terminal size={12} /> {repo.language || "CODE"}
+                    </div>
+                    <h3 className="text-3xl font-bold mb-2 group-hover:text-white transition-colors">{repo.name}</h3>
+                    <p className="text-neutral-400 text-sm line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {repo.description || "High-performance web application engineered by Mifimn."}
+                    </p>
+                  </div>
+                </div>
+              </motion.a>
+            );
+          }) : (
+            <div className="col-span-2 text-center py-20 border border-dashed border-neutral-800">
+              <div className="animate-spin inline-block mr-2"><Box size={20}/></div>
+              Retrieving GitHub Data...
             </div>
-            <button className="w-full bg-red-600 text-white font-bold py-4 rounded-lg hover:bg-red-700 transition-colors">
-              Schedule Now
-            </button>
-          </div>
+          )}
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-950 text-gray-500 py-12 border-t border-gray-900">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="opacity-75 grayscale hover:grayscale-0 transition-all">{LOGO}</div>
-          <div className="text-sm">© {new Date().getFullYear()} FOF Fumigation Service.</div>
-          <div className="flex gap-4">
-            {[1,2,3].map(i => <div key={i} className="w-8 h-8 bg-gray-900 rounded-full hover:bg-red-600 transition-colors cursor-pointer" />)}
+      {/* FOOTER */}
+      <section className="min-h-[60vh] flex flex-col justify-center items-center px-6 text-center border-t border-neutral-900 bg-black relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-neutral-800 rounded-full" />
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-neutral-800 rounded-full" />
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] border border-neutral-800 rounded-full" />
+        </div>
+
+        <div className="relative z-10">
+          <Award size={48} className="mx-auto mb-6 text-white" />
+          <h2 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter">
+            READY TO<br/>COLLABORATE?
+          </h2>
+
+          <div className="flex flex-col md:flex-row gap-6 justify-center">
+            <MagneticButton 
+              href={WHATSAPP_LINK}
+              className="bg-white text-black text-lg font-bold px-8 py-4 hover:bg-neutral-200 transition-colors flex items-center gap-2"
+            >
+              <Smartphone size={20} /> WHATSAPP
+            </MagneticButton>
+            <MagneticButton 
+              href={EMAIL_ADDRESS}
+              className="border border-neutral-700 bg-black text-white text-lg font-bold px-8 py-4 hover:bg-neutral-900 transition-colors flex items-center gap-2"
+            >
+              <Mail size={20} /> SEND EMAIL
+            </MagneticButton>
           </div>
         </div>
-      </footer>
+
+        <footer className="absolute bottom-6 w-full px-6 flex justify-between items-center text-xs font-mono text-neutral-600 uppercase">
+          <span>© 2025 Mifimn Brand</span>
+          <span>Made in Nigeria</span>
+        </footer>
+      </section>
     </div>
   );
-}
+};
+
+export default App;
