@@ -57,7 +57,8 @@ export default function PanicButton({ userData, location }) {
     const locLabel = isStale ? "LAST KNOWN LOC" : "Loc";
 
     // 2. Get Map Link (STANDARD FORMAT)
-    const mapLink = `https://www.google.com/maps?q=${location.lat},${location.lng}`;
+    // Note: We use the "16" zoom level format which is very reliable
+    const mapLink = `http://googleusercontent.com/maps.google.com/maps?q=${location.lat},${location.lng}`;
 
     // 3. Get Battery
     const batt = await getBatteryStatus();
@@ -65,28 +66,41 @@ export default function PanicButton({ userData, location }) {
     // 4. Prepare Message
     const message = `SOS! ${userData.name} initiated a SILENT ALERT. DO NOT CALL. ${locLabel}: ${mapLink} (Acc: ${Math.round(location.accuracy)}m, Batt: ${batt}).`;
 
-    // 5. Payload (Uses Email now)
+    // 5. COMBINE EMAILS LOGIC (Send to both if available)
+    const recipients = userData.email2 
+      ? `${userData.email1},${userData.email2}` 
+      : userData.email1;
+
+    // 6. Payload (Uses Email now)
     const payload = {
-      email: userData.email, 
+      email: recipients, 
       message: message
     };
 
     try {
+      // 7. SEND TO VERCEL BACKEND
       const res = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
+      // If success (Status 200-299)
       if (res.ok) {
         setStatus('SENT');
+        alert("SOS Email Sent Successfully!"); // Confirmation
       } else {
+        // If server error (e.g. 500 or 404), throw error to trigger SMS fallback
         throw new Error("Server failed");
       }
 
     } catch (err) {
       console.error("API Failed", err);
       setStatus('ERROR');
+
+      // 8. FALLBACK: ONLY OPEN SMS IF EMAIL FAILS
+      // This ensures you are never stranded without a way to send help
+      alert("Internet Error: Switching to SMS Mode");
       window.location.href = `sms:${userData.phone1}?body=${encodeURIComponent(message)}`;
     }
   };
