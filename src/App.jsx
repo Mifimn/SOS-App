@@ -5,14 +5,12 @@ import PanicButton from './PanicButton';
 import InfoHub from './InfoHub'; 
 import { useGeoLocation } from './hooks/useGeoLocation';
 
-// Points to your Vercel API
 const BACKEND_URL = "/api/send-sos";
 
 function PanicDashboard({ userData, onReset, onOpenInfo }) {
   const location = useGeoLocation();
   const [safeLoading, setSafeLoading] = useState(false);
 
-  // Helper: Get Battery
   const getBatteryStatus = async () => {
     if ('getBattery' in navigator) {
       try {
@@ -23,29 +21,29 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
     return "Unknown";
   };
 
-  // Logic: GREEN BUTTON (Safe Check-in)
   const handleSafeCheckIn = async () => {
     if (!confirm("Send 'I AM SAFE' email to family?")) return;
     setSafeLoading(true);
 
-    // 1. Instant GPS Logic (Cache First)
     const isStale = location.timestamp && (Date.now() - location.timestamp) > 300000;
     const locLabel = isStale ? "Last Known Loc" : "Current Loc";
 
     let locationText = "";
     if (location.lat) {
-      // Standard Google Maps Link
-      locationText = ` ${locLabel}: http://googleusercontent.com/maps.google.com/maps?q=${location.lat},${location.lng}`;
+      // FIXED LINK: Uses official google.com/maps
+      locationText = ` ${locLabel}: https://www.google.com/maps?q=${location.lat},${location.lng}`;
     }
 
     const batt = await getBatteryStatus();
-
-    // 2. Message Content
     const message = `✅ STATUS: ${userData.name} is SAFE. Network is bad, please DO NOT CALL yet. Batt: ${batt}.${locationText}`;
 
-    // 3. Payload (Now uses EMAIL)
+    // COMBINE EMAILS LOGIC
+    const recipients = userData.email2 
+      ? `${userData.email1},${userData.email2}` 
+      : userData.email1;
+
     const payload = {
-      email: userData.email, 
+      email: recipients, // Sends to both at once
       message: message
     };
 
@@ -60,7 +58,6 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
       else throw new Error("Server Error");
 
     } catch (err) {
-      // Fallback: Opens SMS app if internet/email fails
       window.location.href = `sms:${userData.phone1}?body=${encodeURIComponent(message)}`;
     } finally {
       setSafeLoading(false);
@@ -70,7 +67,6 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
-      {/* Status Bar */}
       <div className="absolute top-4 w-full px-6 flex justify-between font-mono text-xs text-gray-500 z-10">
         <div>
            {location.ready ? <span className="text-green-500">GPS: LIVE (±{Math.round(location.accuracy)}m)</span> : <span className="text-yellow-500 animate-pulse">SEARCHING...</span>}
@@ -82,12 +78,10 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
         {userData.name.toUpperCase()} SAFE-ZONE
       </h1>
 
-      {/* RED BUTTON */}
       <div className="mb-10 z-10">
         <PanicButton userData={userData} location={location} />
       </div>
 
-      {/* GREEN BUTTON */}
       <button 
         onClick={handleSafeCheckIn}
         disabled={safeLoading}
@@ -96,7 +90,6 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
         {safeLoading ? "SENDING..." : "✅ I AM SAFE"}
       </button>
 
-      {/* FOOTER */}
       <div className="absolute bottom-6 w-full px-8 flex justify-between items-center z-10">
         <button onClick={onReset} className="text-xs text-gray-800 hover:text-gray-600">Reset</button>
         <button onClick={onOpenInfo} className="text-2xl p-2 bg-gray-800 rounded-full border border-gray-600 active:scale-90">ℹ️</button>

@@ -57,7 +57,7 @@ export default function PanicButton({ userData, location }) {
     const locLabel = isStale ? "LAST KNOWN LOC" : "Loc";
 
     // 2. Get Map Link (STANDARD FORMAT)
-    const mapLink = `http://googleusercontent.com/maps.google.com/maps?q=${location.lat},${location.lng}`;
+    const mapLink = `https://www.google.com/maps?q=${location.lat},${location.lng}`;
 
     // 3. Get Battery
     const batt = await getBatteryStatus();

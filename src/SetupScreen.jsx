@@ -4,14 +4,15 @@ import { useState } from 'react';
 export default function SetupScreen({ onComplete }) {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',    // <--- NEW: Family Email
-    phone1: ''    // Backup: Phone for SMS fallback
+    email1: '',   // Primary Email
+    email2: '',   // Secondary Email (Optional)
+    phone1: ''    // Backup Phone
   });
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      alert("Please enter your Name and a Family Email.");
+    if (!formData.name || !formData.email1) {
+      alert("Please enter your Name and at least one Family Email.");
       return;
     }
     // Save to LocalStorage
@@ -29,8 +30,8 @@ export default function SetupScreen({ onComplete }) {
           Configure who receives your alerts.
         </p>
 
-        <form onSubmit={handleSave} className="space-y-6">
-          {/* NAME INPUT */}
+        <form onSubmit={handleSave} className="space-y-5">
+          {/* NAME */}
           <div>
             <label className="block text-xs font-mono text-gray-500 mb-1">YOUR NAME</label>
             <input 
@@ -42,19 +43,31 @@ export default function SetupScreen({ onComplete }) {
             />
           </div>
 
-          {/* EMAIL INPUT (PRIMARY) */}
+          {/* EMAIL 1 */}
           <div>
-            <label className="block text-xs font-mono text-gray-500 mb-1">FAMILY EMAIL (For GPS Alerts)</label>
+            <label className="block text-xs font-mono text-gray-500 mb-1">PRIMARY EMAIL (Required)</label>
             <input 
               type="email" 
-              placeholder="family@gmail.com"
+              placeholder="mom@gmail.com"
               className="w-full bg-gray-900 border border-gray-800 rounded p-4 text-white focus:border-red-500 outline-none"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              value={formData.email1}
+              onChange={(e) => setFormData({...formData, email1: e.target.value})}
             />
           </div>
 
-          {/* PHONE INPUT (BACKUP) */}
+          {/* EMAIL 2 (NEW) */}
+          <div>
+            <label className="block text-xs font-mono text-gray-500 mb-1">SECONDARY EMAIL (Optional)</label>
+            <input 
+              type="email" 
+              placeholder="dad@yahoo.com"
+              className="w-full bg-gray-900 border border-gray-800 rounded p-4 text-white focus:border-blue-500 outline-none"
+              value={formData.email2}
+              onChange={(e) => setFormData({...formData, email2: e.target.value})}
+            />
+          </div>
+
+          {/* PHONE */}
           <div>
             <label className="block text-xs font-mono text-gray-500 mb-1">BACKUP PHONE (SMS Fallback)</label>
             <input 
@@ -68,7 +81,7 @@ export default function SetupScreen({ onComplete }) {
 
           <button 
             type="submit"
-            className="w-full bg-red-600 font-bold py-4 rounded shadow-lg hover:bg-red-700 transition-colors"
+            className="w-full bg-red-600 font-bold py-4 rounded shadow-lg hover:bg-red-700 transition-colors mt-4"
           >
             SAVE & ARM
           </button>
