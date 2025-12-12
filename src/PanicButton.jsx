@@ -1,6 +1,7 @@
+// src/PanicButton.jsx
 import { useState, useRef } from 'react';
 
-// YOUR BACKEND URL
+// Vercel API Path
 const BACKEND_URL = "/api/send-sos";
 
 export default function PanicButton({ userData, location }) {
@@ -56,7 +57,7 @@ export default function PanicButton({ userData, location }) {
     const locLabel = isStale ? "LAST KNOWN LOC" : "Loc";
 
     // 2. Get Map Link (STANDARD FORMAT)
-    const mapLink = `https://maps.google.com/maps?q=${location.lat},${location.lng}`;
+    const mapLink = `http://googleusercontent.com/maps.google.com/maps?q=${location.lat},${location.lng}`;
 
     // 3. Get Battery
     const batt = await getBatteryStatus();
@@ -64,8 +65,9 @@ export default function PanicButton({ userData, location }) {
     // 4. Prepare Message
     const message = `SOS! ${userData.name} initiated a SILENT ALERT. DO NOT CALL. ${locLabel}: ${mapLink} (Acc: ${Math.round(location.accuracy)}m, Batt: ${batt}).`;
 
+    // 5. Payload (Uses Email now)
     const payload = {
-      phone: userData.phone1,
+      email: userData.email, 
       message: message
     };
 
@@ -76,18 +78,8 @@ export default function PanicButton({ userData, location }) {
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
-
-      if (data.success) {
+      if (res.ok) {
         setStatus('SENT');
-        // Send to Contact 2 if exists
-        if (userData.phone2) {
-             fetch(BACKEND_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: userData.phone2, message })
-             });
-        }
       } else {
         throw new Error("Server failed");
       }
