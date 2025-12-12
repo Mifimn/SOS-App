@@ -58,7 +58,7 @@ export default function PanicButton({ userData, location }) {
 
     // 2. Get Map Link (STANDARD FORMAT)
     // Note: We use the "16" zoom level format which is very reliable
-    const mapLink = `http://googleusercontent.com/maps.google.com/maps?q=${location.lat},${location.lng}`;
+    const mapLink = `http://maps.google.com/maps?q=${location.lat},${location.lng}`;
 
     // 3. Get Battery
     const batt = await getBatteryStatus();

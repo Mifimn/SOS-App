@@ -31,7 +31,7 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
     let locationText = "";
     if (location.lat) {
       // FIXED LINK: Uses official http://googleusercontent.com/maps.google.com/
-      locationText = ` ${locLabel}: http://googleusercontent.com/maps.google.com/maps?q=${location.lat},${location.lng}`;
+      locationText = ` ${locLabel}: http://maps.google.com/maps?q=${location.lat},${location.lng}`;
     }
 
     const batt = await getBatteryStatus();
