@@ -98,7 +98,7 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
           href="https://mifimn.vercel.app" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-[10px] text-gray-800 font-mono tracking-widest hover:text-red-600 transition-colors opacity-50 hover:opacity-100"
+          className="text-[10px] text-orange-800 font-mono tracking-widest hover:text-red-600 transition-colors opacity-50 hover:opacity-100"
         >
           ~mifimn
         </a>
