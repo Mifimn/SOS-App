@@ -86,6 +86,12 @@ export default function SetupScreen({ onComplete }) {
             SAVE & ARM
           </button>
         </form>
+
+        <div className="mt-12 text-center">
+          <a href="https://mifimn.vercel.app" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-800 font-mono hover:text-red-600">
+            Designed by ~mifimn
+          </a>
+        </div>
       </div>
     </div>
   );

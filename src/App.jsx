@@ -30,8 +30,8 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
 
     let locationText = "";
     if (location.lat) {
-      // FIXED LINK: Uses official google.com/maps
-      locationText = ` ${locLabel}: https://www.google.com/maps?q=${location.lat},${location.lng}`;
+      // FIXED LINK: Uses official http://googleusercontent.com/maps.google.com/
+      locationText = ` ${locLabel}: http://googleusercontent.com/maps.google.com/maps?q=${location.lat},${location.lng}`;
     }
 
     const batt = await getBatteryStatus();
@@ -92,6 +92,17 @@ function PanicDashboard({ userData, onReset, onOpenInfo }) {
 
       <div className="absolute bottom-6 w-full px-8 flex justify-between items-center z-10">
         <button onClick={onReset} className="text-xs text-gray-800 hover:text-gray-600">Reset</button>
+
+        {/* DESIGNER CREDIT */}
+        <a 
+          href="https://mifimn.vercel.app" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-[10px] text-gray-800 font-mono tracking-widest hover:text-red-600 transition-colors opacity-50 hover:opacity-100"
+        >
+          ~mifimn
+        </a>
+
         <button onClick={onOpenInfo} className="text-2xl p-2 bg-gray-800 rounded-full border border-gray-600 active:scale-90">ℹ️</button>
       </div>
     </div>
